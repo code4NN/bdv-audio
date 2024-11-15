@@ -26,13 +26,13 @@ class mainapp:
         
         
     def home(self):
-        st.title("Welcome ")
+        st.title(":gray[Welcome to Barasana Dhaam Audio services]")
         
         lecinfo = self.lecture_info
         root_dir  = f"./{lecinfo['sindhu']}"
         
         lecture_name = lecinfo['lecture_name']
-        lec_encrypt_id = lecinfo['lec_entrypt_id']
+        lec_encrypt_id = lecinfo['lec_encrypt_id']
         lec_id = lecinfo['lec_download_id']
         server = lecinfo['server']
         

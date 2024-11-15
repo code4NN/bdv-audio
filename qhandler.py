@@ -11,6 +11,9 @@ import eyed3
 from io import BytesIO
 from PIL import Image
 
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
 
 def query_handler(app):
     
@@ -116,7 +119,7 @@ def download_play_lecture(root_dir, display_name,lec_encrypt_id,lec_id, server):
         
         elif server =='drive':
             download_url = f"https://drive.google.com/uc?id={lec_id}&export=download"
-            url = f"https://drive.google.com/uc?id={file_id}"
+            url = f"https://drive.google.com/uc?id={lec_id}"
             with msgbox.container():
                 st.markdown(f"downloading from drive ")
                 st.caption("This may take a while please wait ...")
@@ -124,55 +127,56 @@ def download_play_lecture(root_dir, display_name,lec_encrypt_id,lec_id, server):
                 st.success("done")
             msgbox.empty()
         
-        else:
-            # change the filename so that it points to actual file
-            existing_file = [i for i in available_file_raw if i.split("^")[1] == filename]
-            filename = existing_file[0]
-            
-            # define the download urls etc
-            if server =='mega':
-                download_url = download_url = f"https://mega.co.nz/#!{lec_id}"
-            
-            elif server =='drive':
-                download_url = f"https://drive.google.com/uc?id={lec_id}&export=download"
-                url = f"https://drive.google.com/file/d/{lec_id}/view"
+    else:
+        # change the filename so that it points to actual file
+        existing_file = [i for i in available_file_raw if i.split("^")[1] == filename]
+        filename = existing_file[0]
         
-        st.markdown("")
-        st.markdown("")
-        
-        st.markdown(f"## :rainbow[{display_name}]")
-
-        # display the image if the audio file have one
-        eye_file = eyed3.load(f"{root_dir}/{filename}")
-        file_duration_secs = eye_file.info.time_secs
-        if eye_file.tag and eye_file.tag.images:
-            cover_image = Image.open(BytesIO(eye_file.tag.images[0].image_data))
-            st.image(cover_image)
-        
-        st.markdown("")
-        st.markdown("")
-        foward_min = st.number_input("forward (in min)",
-                                     step=1,min_value=0,
-                                     value=0)
-        st.markdown("")
-        st.markdown("")
-        st.markdown("")
-        st.audio(f"{root_dir}/{filename}",format="audio/wav",
-                 start_time=foward_min*60)
-        st.markdown("")
-        st.markdown("")
-        st.divider()
-        
+        # define the download urls etc
         if server =='mega':
-            st.markdown(f"[download from mega]({download_url})")
+            download_url = download_url = f"https://mega.co.nz/#!{lec_id}"
         
         elif server =='drive':
-            st.markdown(f"[download from drive]({download_url})")
-            st.markdown("")
-            st.markdown(f"[play on drive]({url})")
+            download_url = f"https://drive.google.com/uc?id={lec_id}&export=download"
+            url = f"https://drive.google.com/file/d/{lec_id}/view"
+        
+    st.markdown("")
+    st.markdown("")
+    
+    st.markdown(f"## :rainbow[{display_name}]")
+
+    # display the image if the audio file have one
+    eye_file = eyed3.load(f"{root_dir}/{filename}")
+    file_duration_secs = eye_file.info.time_secs
+    if eye_file.tag and eye_file.tag.images:
+        cover_image = Image.open(BytesIO(eye_file.tag.images[0].image_data))
+        st.image(cover_image)
+    
+    st.markdown("")
+    st.markdown("")
+    foward_min = st.number_input("forward (in min)",
+                                    step=1,min_value=0,
+                                    value=0)
+    st.markdown("")
+    st.markdown("")
+    st.markdown("")
+    st.audio(f"{root_dir}/{filename}",format="audio/wav",
+                start_time=foward_min*60)
+    st.markdown("")
+    st.markdown("")
+    st.divider()
+    
+    if server =='mega':
+        st.markdown(f"[download from mega]({download_url})")
+    
+    elif server =='drive':
+        st.markdown(f"[download from drive]({download_url})")
+        st.markdown("")
+        st.markdown(f"[play on drive]({url})")
         
         
-            
+def store_log_(upload_array):
+    
         
         
         
