@@ -7,13 +7,12 @@ import pandas as pd
 from custom_module.mega.mega.mega import Mega
 import gdown
 
-import eyed3
-from io import BytesIO
-from PIL import Image
-
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+import subprocess
+import io
+# import ffmpeg
 
 def query_handler(app):
     
@@ -22,6 +21,7 @@ def query_handler(app):
     user = query_dict.get('user','blank')
     lecture_encrypt_id = query_dict.get('id', 'blank')
     sindhu = query_dict.get('sindhu', 'blank')
+    
     
     if lecture_encrypt_id == 'blank' or sindhu == 'blank' :
         st.warning("the url is incorrect; absent id or sindhu")
@@ -76,8 +76,24 @@ def query_handler(app):
         st.stop()
     app.lecture_info= lectureinfo
     
+    # for sharing of clips
+    start_time = query_dict.get('ss','no')
+    duration = query_dict.get('dur','no')
+    clip_name = query_dict.get('name','no')
+    # st.write([i=='no' for i in [start_time,duration,clip_name]])
+    if sum([i=='no' for i in [start_time,duration,clip_name]])==0:
+        # valid clip URL
+        start_time = int(start_time)
+        duration = int(duration)
+        app.clip_info_dict = {
+            "start_time":start_time,
+            "duration":duration,
+            "clip_name":clip_name
+        }
+        app.page_is_sharedclip = True
+    
             
-def download_play_lecture(root_dir, display_name,lec_encrypt_id,lec_id, server):
+def bring_lecture_by_id(root_dir,lec_encrypt_id,lec_id, server):
     # root_dir,lec_encrypt_id,lec_id,server)
     
     filename = f"{lec_encrypt_id}.mp3"
@@ -100,6 +116,7 @@ def download_play_lecture(root_dir, display_name,lec_encrypt_id,lec_id, server):
         
         msgbox = st.empty()
         download_url = ''
+        url = ''
         india_timezone = pytz.timezone('Asia/Kolkata')
         file_prefix = (datetime.datetime.now(india_timezone)
                     .strftime("%d%H%M%S"))
@@ -131,6 +148,8 @@ def download_play_lecture(root_dir, display_name,lec_encrypt_id,lec_id, server):
         # change the filename so that it points to actual file
         existing_file = [i for i in available_file_raw if i.split("^")[1] == filename]
         filename = existing_file[0]
+        download_url = ''
+        url = ''
         
         # define the download urls etc
         if server =='mega':
@@ -140,44 +159,114 @@ def download_play_lecture(root_dir, display_name,lec_encrypt_id,lec_id, server):
             download_url = f"https://drive.google.com/uc?id={lec_id}&export=download"
             url = f"https://drive.google.com/file/d/{lec_id}/view"
         
-    st.markdown("")
-    st.markdown("")
+    return (f"{root_dir}/{filename}",download_url,url)
+        
+        
+def store_log_sheet(lecinfo_dict,hit_type):
     
-    st.markdown(f"## :rainbow[{display_name}]")
+    if 'google_sheet_connection' not in st.session_state:
+        sheet_id = st.secrets['database']['logger_sheet_id']
+        credentials_info = st.secrets['service_account']
+        SCOPE = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/spreadsheets"
+        ]
+        
+        gc = (gspread
+            .authorize(ServiceAccountCredentials
+                        .from_json_keyfile_dict(credentials_info,
+                                                SCOPE)
+                        )
+            )
+        
+        workbook = gc.open_by_key(sheet_id)
+        st.session_state['google_sheet_connection'] = workbook
+    
+    india_timezone = pytz.timezone('Asia/Kolkata')
+    timestamp = (datetime.datetime.now(india_timezone)
+                .strftime("%Y-%m-%d %H:%M:%S"))
+    
+    if hit_type =='hearnow':
+        upload_array_final = [[
+            timestamp,
+            lecinfo_dict['server'],
+            lecinfo_dict['sindhu'],
+            lecinfo_dict['lec_encrypt_id'],
+            lecinfo_dict['lecture_name'],
+            lecinfo_dict['user']
+        ]]
+        
+        
+        workbook = st.session_state['google_sheet_connection']
+        (workbook
+        .worksheet('url_hits')
+        .append_rows(values=upload_array_final,
+                    value_input_option='USER_ENTERED',
+                    table_range='A:F'))
+    
+    elif hit_type =="clip":
+        upload_array_final = [[
+            timestamp,
+            lecinfo_dict['server'],
+            lecinfo_dict['sindhu'],
+            lecinfo_dict['lec_encrypt_id'],
+            lecinfo_dict['lecture_name'],
+            lecinfo_dict['clip_url'],
+            lecinfo_dict['clip_name'],
+            lecinfo_dict['clip_duration'],
+            lecinfo_dict['clip_maker']
+        ]]
+        
+        
+        workbook = st.session_state['google_sheet_connection']
+        (workbook
+        .worksheet('clip_hits')
+        .append_rows(values=upload_array_final,
+                    value_input_option='USER_ENTERED',
+                    table_range='A:I'))
+    
+    elif hit_type =="shared_clip":
+        upload_array_final = [[
+            timestamp,
+            lecinfo_dict['server'],
+            lecinfo_dict['sindhu'],
+            lecinfo_dict['lec_encrypt_id'],
+            lecinfo_dict['lecture_name'],
+            lecinfo_dict['clip_url'],
+            lecinfo_dict['clip_name'],
+            lecinfo_dict['clip_duration'],
+            lecinfo_dict['clip_maker']
+        ]]
+        
+        
+        workbook = st.session_state['google_sheet_connection']
+        (workbook
+        .worksheet('shared_clip_hits')
+        .append_rows(values=upload_array_final,
+                    value_input_option='USER_ENTERED',
+                    table_range='A:I'))
+    
 
-    # display the image if the audio file have one
-    eye_file = eyed3.load(f"{root_dir}/{filename}")
-    file_duration_secs = eye_file.info.time_secs
-    if eye_file.tag and eye_file.tag.images:
-        cover_image = Image.open(BytesIO(eye_file.tag.images[0].image_data))
-        st.image(cover_image)
+def clip_audio_to_memory(input_file_path, start_time, duration):
+    output_buffer = io.BytesIO()
+
+    # Construct the ffmpeg command
+    command = [
+        'ffmpeg',
+        '-i', input_file_path,         # Input file
+        '-ss', str(start_time),   # Start time
+        '-t', str(duration),      # Duration
+        '-f', 'mp3',              # Output format
+        '-'
+    ]
     
-    st.markdown("")
-    st.markdown("")
-    foward_min = st.number_input("forward (in min)",
-                                    step=1,min_value=0,
-                                    value=0)
-    st.markdown("")
-    st.markdown("")
-    st.markdown("")
-    st.audio(f"{root_dir}/{filename}",format="audio/wav",
-                start_time=foward_min*60)
-    st.markdown("")
-    st.markdown("")
-    st.divider()
+    # Run the command and capture stdout
+    process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+    output_buffer.write(process.stdout)
+    output_buffer.seek(0)  # Reset buffer position to the start
     
-    if server =='mega':
-        st.markdown(f"[download from mega]({download_url})")
-    
-    elif server =='drive':
-        st.markdown(f"[download from drive]({download_url})")
-        st.markdown("")
-        st.markdown(f"[play on drive]({url})")
-        
-        
-def store_log_(upload_array):
-    
-        
+    return output_buffer    
         
         
         
