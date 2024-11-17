@@ -335,7 +335,7 @@ class mainapp:
         with left:
             st.download_button(
                     label="Download Clipped Audio",
-                    data=self.clipped_audio_buffer,
+                    data=self.clip_audio_buffer_shared,
                     file_name=clipinfo['clip_name'],
                     mime="audio/mpeg"
                 )
