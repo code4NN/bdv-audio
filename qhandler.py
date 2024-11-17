@@ -301,14 +301,14 @@ def clip_audio_to_memory(input_file_path, start_time, duration):
             os.remove(output_zip_path)
             st.success("cleaned")
     
-    install_ffmpeg()
+    # install_ffmpeg()
     
-    # ffmpeg_path = os.path.join(".","custom_module","ffmpeg","bin", "ffmpeg.exe")
-    # os.chmod(ffmpeg_path, 0o755)
+    ffmpeg_path = os.path.join(".","custom_module","ffmpeg")
+    os.chmod(ffmpeg_path, 0o755)
 
     # Construct the ffmpeg command
     command = [
-        'ffmpeg',
+        ffmpeg_path,
         '-i', input_file_path,         # Input file
         '-ss', str(start_time),   # Start time
         '-t', str(duration),      # Duration
