@@ -3,6 +3,7 @@ import os
 import pytz
 import datetime
 import pandas as pd
+import zipfile
 
 from custom_module.mega.mega.mega import Mega
 import gdown
@@ -252,10 +253,33 @@ def store_log_sheet(lecinfo_dict,hit_type):
 
 def clip_audio_to_memory(input_file_path, start_time, duration):
     output_buffer = io.BytesIO()
+    
+    # downloading if required (for first run)
+    if 'ffmpeg' not in os.listdir("./custom_module"):
+        st.warning("setting up the ffmpeg thing")
+        with st.spinner("Downloading the zip from drive"):
+            file_id = st.secrets['database']['fmpeg_id']
+            url = f"https://drive.google.com/uc?export=download&id={file_id}"
+            output_zip_path = "./large_files.zip"
+            gdown.download(url, output_zip_path, quiet=False)
+            st.success("file downloaded")
+        
+        with st.spinner("unzipping the files"):
+            output_dir = "./custom_module"
+            with zipfile.ZipFile(output_zip_path, 'r') as zip_ref:
+                zip_ref.extractall(output_dir)
+            st.success("Successfully unzipped")
+        
+        with st.spinner("Delete the zip file"):
+            os.remove(output_zip_path)
+            st.success("cleaned")
+            
+    
+    ffmpeg_path = os.path.join(".","custom_module","ffmpeg","bin", "ffmpeg.exe")
 
     # Construct the ffmpeg command
     command = [
-        'ffmpeg',
+        ffmpeg_path,
         '-i', input_file_path,         # Input file
         '-ss', str(start_time),   # Start time
         '-t', str(duration),      # Duration
