@@ -258,7 +258,7 @@ def install_ffmpeg():
         st.write("FFmpeg is already installed. Skipping installation.")
         return  # Exit the function as FFmpeg is already installed
     
-    except subprocess.CalledProcessError:
+    except :
         # FFmpeg is not installed, proceed with installation
         st.write("FFmpeg not found. Installing FFmpeg...")
         try:
