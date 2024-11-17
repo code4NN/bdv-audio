@@ -268,6 +268,7 @@ def clip_audio_to_memory(input_file_path, start_time, duration):
             with zipfile.ZipFile(output_zip_path, 'r') as zip_ref:
                 zip_ref.extractall(output_dir)
             st.success("Successfully unzipped")
+            
         
         with st.spinner("Delete the zip file"):
             os.remove(output_zip_path)
@@ -275,6 +276,7 @@ def clip_audio_to_memory(input_file_path, start_time, duration):
             
     
     ffmpeg_path = os.path.join(".","custom_module","ffmpeg","bin", "ffmpeg.exe")
+    os.chmod(ffmpeg_path, 0o755)
 
     # Construct the ffmpeg command
     command = [
