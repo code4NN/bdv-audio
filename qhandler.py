@@ -1,5 +1,5 @@
 import streamlit as st
-import os
+import os,sys
 import pytz
 import datetime
 import pandas as pd
@@ -250,11 +250,38 @@ def store_log_sheet(lecinfo_dict,hit_type):
                     table_range='A:I'))
     
 
+def install_ffmpeg():
+    try:
+        # Check if FFmpeg is already installed
+        st.write("Checking if FFmpeg is already installed...")
+        subprocess.check_call(['ffmpeg', '-version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        st.write("FFmpeg is already installed. Skipping installation.")
+        return  # Exit the function as FFmpeg is already installed
+    
+    except subprocess.CalledProcessError:
+        # FFmpeg is not installed, proceed with installation
+        st.write("FFmpeg not found. Installing FFmpeg...")
+        try:
+            # Update package list
+            st.write("Updating package list...")
+            subprocess.check_call(['sudo', 'apt', 'update'])  # You can change `apt` to `dnf` or `pacman` for other distributions
+            st.write("Package list updated.")
+            
+            # Install FFmpeg
+            st.write("Installing FFmpeg...")
+            subprocess.check_call(['sudo', 'apt', 'install', '-y', 'ffmpeg'])
+            st.write("FFmpeg installed successfully.")
+            
+        except subprocess.CalledProcessError as e:
+            st.write(f"Error occurred while installing FFmpeg: {e}")
+            sys.exit(1)
+
 def clip_audio_to_memory(input_file_path, start_time, duration):
     output_buffer = io.BytesIO()
     
     # downloading if required (for first run)
-    if 'ffmpeg' not in os.listdir("./custom_module"):
+    if False:
+    # if 'ffmpeg' not in os.listdir("./custom_module"):
         st.warning("setting up the ffmpeg thing")
         with st.spinner("Downloading the zip from drive"):
             file_id = st.secrets['database']['fmpeg_id']
@@ -273,14 +300,15 @@ def clip_audio_to_memory(input_file_path, start_time, duration):
         with st.spinner("Delete the zip file"):
             os.remove(output_zip_path)
             st.success("cleaned")
-            
     
-    ffmpeg_path = os.path.join(".","custom_module","ffmpeg","bin", "ffmpeg.exe")
-    os.chmod(ffmpeg_path, 0o755)
+    install_ffmpeg()
+    
+    # ffmpeg_path = os.path.join(".","custom_module","ffmpeg","bin", "ffmpeg.exe")
+    # os.chmod(ffmpeg_path, 0o755)
 
     # Construct the ffmpeg command
     command = [
-        ffmpeg_path,
+        'ffmpeg',
         '-i', input_file_path,         # Input file
         '-ss', str(start_time),   # Start time
         '-t', str(duration),      # Duration
@@ -295,9 +323,6 @@ def clip_audio_to_memory(input_file_path, start_time, duration):
     
     return output_buffer    
         
-        
-            
-
 def bringme2top():
     if "bring_me_2_top" not in st.session_state:
         st.session_state["bring_me_2_top"] = 1
@@ -312,3 +337,5 @@ def bringme2top():
             """,
         height=0,
     )
+    
+    
