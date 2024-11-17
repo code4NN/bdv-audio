@@ -12,13 +12,14 @@ from urllib.parse import quote_plus
 from qhandler import query_handler, bring_lecture_by_id
 from qhandler import store_log_sheet
 from qhandler import clip_audio_to_memory
+from qhandler import bringme2top
 
 
 class mainapp:
     def __init__(self):
         
         self.page_config = {'page_title': "VANI",
-                            'page_icon':'☔',
+                            'page_icon':'💊',
                             'layout':'wide'}
         
         # shared clip view related
@@ -120,14 +121,14 @@ class mainapp:
                 st.markdown(f"[download from drive]({download_url})")
                 st.markdown("")
                 st.markdown(f"[play on drive]({play_url})")
-            
-            
-
+        
         def toggle_clipmode():
             self.clip_mode_active = not self.clip_mode_active
+            self.page_config.__setitem__("page_icon","✂️")
+            bringme2top()
         
         st.divider()
-        st.button("Make a clip" if not self.clip_mode_active else "Return to home page",
+        st.button("Make a clip ✂️" if not self.clip_mode_active else "Return to home page",
                   on_click=toggle_clipmode,
                   type='primary' if self.clip_mode_active else 'secondary'
                   )
@@ -379,6 +380,29 @@ if 'mainapp'  not in st.session_state:
     st.session_state['mainapp'] = mainapp()
 mainapp = st.session_state['mainapp']
 st.set_page_config(**mainapp.page_config)
+
+st.markdown(
+            """
+            <style>
+            [data-testid="baseButton-header"] {
+                visibility: hidden;
+            }
+            [data-testid="stHeader"] {
+            background-color: #365069;
+            color: white;
+            }
+            footer {
+            background-color: #365069;
+            color: white;
+            }
+            a[href="https://streamlit.io/cloud"] {
+            display: none;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+)
+
 
 
 if not mainapp.query_is_handled:

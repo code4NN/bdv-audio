@@ -14,6 +14,8 @@ import subprocess
 import io
 # import ffmpeg
 
+from streamlit.components.v1 import html as myHTML
+
 def query_handler(app):
     
     query_dict = st.query_params
@@ -269,4 +271,19 @@ def clip_audio_to_memory(input_file_path, start_time, duration):
     return output_buffer    
         
         
-        
+            
+
+def bringme2top():
+    if "bring_me_2_top" not in st.session_state:
+        st.session_state["bring_me_2_top"] = 1
+    st.session_state["bring_me_2_top"] += 1
+    myHTML(
+        f"""
+            <script>
+                var changethis = {st.session_state['bring_me_2_top']};
+                var body = window.parent.document.querySelector(".main");
+                body.scrollTop = -5;
+            </script>
+            """,
+        height=0,
+    )
