@@ -306,7 +306,7 @@ class mainapp:
         if not self.clip_is_ready:
             self.clip_is_ready = True
             with st.spinner("audio clipping in progress"):
-                        self.clipped_audio_buffer = clip_audio_to_memory(
+                        self.clip_audio_buffer_shared = clip_audio_to_memory(
                             input_file_path=file_path,
                             start_time=clipinfo['start_time'],
                             duration=clipinfo['duration']
