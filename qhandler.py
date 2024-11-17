@@ -117,7 +117,6 @@ def bring_lecture_by_id(root_dir,lec_encrypt_id,lec_id, server):
         for one_file in sorted_available_files[MAX_LECTURE_STORE:]:
             os.remove(f"{root_dir}/{one_file}")
         
-        msgbox = st.empty()
         download_url = ''
         url = ''
         india_timezone = pytz.timezone('Asia/Kolkata')
@@ -125,26 +124,26 @@ def bring_lecture_by_id(root_dir,lec_encrypt_id,lec_id, server):
                     .strftime("%d%H%M%S"))
         filename = f"{file_prefix}^{filename}"
         
+        msgbox = st.empty()
         if server =='mega':
             download_url = f"https://mega.co.nz/#!{lec_id}"
-            with msgbox.container():
-                st.markdown(f"downloading from mega ")
-                st.caption("This may take a while please wait ...")
+            with st.spinner("downloading from mega..."):
+                msgbox.caption("may take sometime please wait...")
                 mega_connection = Mega()
                 mega_connection.download_url(download_url,
                                                 root_dir,
                                                 dest_filename=filename)
-                st.success("completed")
+                msgbox.success("...done")
             msgbox.empty()
         
         elif server =='drive':
             download_url = f"https://drive.google.com/uc?id={lec_id}&export=download"
             url = f"https://drive.google.com/uc?id={lec_id}"
-            with msgbox.container():
-                st.markdown(f"downloading from drive ")
-                st.caption("This may take a while please wait ...")
+            with st.spinner("downloading from mega..."):
+                msgbox.caption("This may take a while please wait ...")
+                
                 gdown.download(url, f"{root_dir}/{filename}", quiet=False, fuzzy=True)
-                st.success("done")
+                msgbox.success("...done")
             msgbox.empty()
         
     else:
