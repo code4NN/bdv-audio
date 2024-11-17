@@ -303,7 +303,7 @@ def clip_audio_to_memory(input_file_path, start_time, duration):
     
     # install_ffmpeg()
     
-    ffmpeg_path = os.path.join(".","custom_module","ffmpeg")
+    ffmpeg_path = r"./ffmpeg_for_linux/ffmpeg_binary/ffmpeg-7.0.2-amd64-static/ffmpeg"
     os.chmod(ffmpeg_path, 0o755)
 
     # Construct the ffmpeg command
