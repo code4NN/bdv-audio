@@ -27,7 +27,10 @@ def query_handler(app):
     
     
     if lecture_encrypt_id == 'blank' or sindhu == 'blank' :
-        st.warning("the url is incorrect; absent id or sindhu")
+        st.markdown("### :rainbow[BDV audio services]")
+        st.image("https://i.ytimg.com/vi/sIzVWf21J1g/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLA30SYKGDSfqO9blTj0xPX9WWQq9Q")
+        st.markdown("* the app works in conjunction with the vani syllabus on notion")
+        st.markdown("* and to provide audio player and trimmer for VANI syllabus and SP-sindhu lectures ")
         st.stop()
     
     # get the lecture info dict and push user etc info to a sheet
@@ -338,4 +341,21 @@ def bringme2top():
         height=0,
     )
     
+
+def valid_start_end_time(input_time,max_length_seconds):
+    input_time = str(input_time)
+    time_min,time_sec = input_time.split(".")
+    time_min = int(time_min)
+    time_sec = int(time_sec) if len(time_sec)==2 else int(time_sec)*10
     
+    duration_seconds = sum([time_min*60,time_sec])
+    
+    if time_sec > 59:
+        return (False,f"second ({time_sec}) cannot exceed 59")
+    
+    # elif duration_seconds > max_length_seconds:
+    #     return (False, f"duration ({duration_seconds}) cannot exceed max length ({max_length_seconds})")
+
+    else:
+        return (True, f"{time_min} min and {time_sec} sec")
+
