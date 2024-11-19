@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 
 # for handling cover image of audio
@@ -148,11 +149,7 @@ class mainapp:
             # show tools to clip the audio
             
             st.divider()
-            # st.caption("minute as whole integer and second as two digit decimals")
-            # st.caption("for 3 minutes and 8 seconds. put 3.08")
-            # st.caption("for 3 minutes and 20 seconds. put 3.2")
-            
-            left,right = st.columns(2)
+            left,middle,right = st.columns(3)
             st.markdown(
                 """
                 <style>
@@ -172,8 +169,17 @@ class mainapp:
                 # st.write(time_seconds)
                 # st.write(minute_,seconds_,f"{minute_}{seconds_}")
                 return int(f"{minute_}{seconds_:02}")
-            
             with left:
+                with st.popover("Time format guide"):
+                    st.markdown("* last 2 digit of integer are considered as seconds. and remaining(if any) as minutes")
+                    st.dataframe(pd.DataFrame([
+                              [1,"1 s"],
+                              [16,"16 s"],
+                              [108,"1 min 8 s"],
+                              [1600,"16 min 0 s"]
+                              ],columns=['input','inferred time']),
+                             hide_index=True)
+            with middle:
                 start_time_input = st.number_input("choose start time",
                                                    min_value=0,
                                                    max_value=convert_time_to_int(file_duration_secs),
