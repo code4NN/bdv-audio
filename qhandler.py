@@ -342,20 +342,28 @@ def bringme2top():
     )
     
 
-def valid_start_end_time(input_time,max_length_seconds):
+def valid_start_end_time(input_time):
+    """
+    returns (time_is_valid, msg to show, duration)"""
     input_time = str(input_time)
-    time_min,time_sec = input_time.split(".")
-    time_min = int(time_min)
-    time_sec = int(time_sec) if len(time_sec)==2 else int(time_sec)*10
+    # st.caption(input_time)
+    
+    time_min,time_sec = None,None
+    if len(input_time) in [1,2]:
+        # seconds
+        time_min,time_sec = 0,int(input_time)
+    else:
+        time_min,time_sec = int(input_time[:-2]), int(input_time[-2:])
     
     duration_seconds = sum([time_min*60,time_sec])
     
     if time_sec > 59:
-        return (False,f"second ({time_sec}) cannot exceed 59")
+        return (False,f"#### :red[second ({time_sec}) cannot exceed 59]",duration_seconds)
     
     # elif duration_seconds > max_length_seconds:
-    #     return (False, f"duration ({duration_seconds}) cannot exceed max length ({max_length_seconds})")
-
+    #     return (False,
+    #             f"#### :red[duration ({duration_seconds} s) cannot exceed max length ({max_length_seconds} s)]",
+    #             duration_seconds)
     else:
-        return (True, f"{time_min} min and {time_sec} sec")
+        return (True, f"#### :green[{time_min} min and {time_sec} sec]",duration_seconds)
 

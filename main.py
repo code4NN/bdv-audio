@@ -13,6 +13,7 @@ from qhandler import query_handler, bring_lecture_by_id
 from qhandler import store_log_sheet
 from qhandler import clip_audio_to_memory
 from qhandler import bringme2top
+from qhandler import valid_start_end_time
 
 
 class mainapp:
@@ -114,6 +115,12 @@ class mainapp:
             st.markdown("")
             st.divider()
             
+            st.download_button("Direct Download",
+                               data=file_path,
+                               file_name=f"{lecture_name}.mp3",
+                                mime="audio/mpeg"
+                               )
+            
             if server =='mega':
                 st.markdown(f"[download from mega]({download_url})")
             
@@ -141,53 +148,67 @@ class mainapp:
             # show tools to clip the audio
             
             st.divider()
+            # st.caption("minute as whole integer and second as two digit decimals")
+            # st.caption("for 3 minutes and 8 seconds. put 3.08")
+            # st.caption("for 3 minutes and 20 seconds. put 3.2")
+            
             left,right = st.columns(2)
-            start_time_MS = [None,None]
-            end_time_MS = [None,None]
+            st.markdown(
+                """
+                <style>
+                [data-testid="stNumberInputStepUp"] {
+                 display: none;
+                }
+                [data-testid="stNumberInputStepDown"] {
+                 display: none;
+                }
+                </style>
+                """,
+                unsafe_allow_html=True
+                )
+            
+            def convert_time_to_int(time_seconds):
+                minute_,seconds_ = divmod(int(time_seconds),60)
+                # st.write(time_seconds)
+                # st.write(minute_,seconds_,f"{minute_}{seconds_}")
+                return int(f"{minute_}{seconds_:02}")
             
             with left:
-                st.markdown("#### :gray[Choose Start time]")
-                start_time_MS[0] = st.number_input("start minute",
-                                max_value=file_duration_mins,
-                                min_value=0,
-                                step=1,
-                                value=0)
-                
-                start_time_MS[1] = st.number_input("start second",
-                                                   max_value=59,
+                start_time_input = st.number_input("choose start time",
                                                    min_value=0,
+                                                   max_value=convert_time_to_int(file_duration_secs),
                                                    step=1,
-                                                   value=0)
-                start_time_seconds = sum([start_time_MS[0]*60,start_time_MS[1]])
-            
+                                                   value=0
+                                                   )
+                start_is_valid, msg, start_time_seconds = valid_start_end_time(start_time_input)
+                st.markdown(msg)
+                
             with right:
-                st.markdown("#### :gray[Choose End time]")
-                end_time_MS[0] = st.number_input("end minute",
-                                max_value=file_duration_mins,
-                                min_value=start_time_MS[0],
-                                step=1,
-                                value=min(file_duration_mins,start_time_MS[0]+1))
-                
-                end_time_MS[1] = st.number_input("end second",
-                                                   max_value=59,
-                                                   min_value=0,
+                end_time_input = st.number_input("choose end time",
+                                                   min_value=convert_time_to_int(start_time_seconds),
                                                    step=1,
-                                                   value=0)
-                end_time_seconds = sum([end_time_MS[0]*60,end_time_MS[1]])
+                                                   value=convert_time_to_int(min(file_duration_secs,start_time_seconds+60)),
+                                                   )
+                end_is_valid, msg, end_time_seconds = valid_start_end_time(end_time_input)
+                st.markdown(msg)
+            
             st.divider()
             
             # validate the input time window
-            if end_time_seconds > file_duration_secs:
-                st.error("End time is beyond the file duration!!")
-            
-            elif end_time_seconds - start_time_seconds < 10:
+            if end_time_seconds - start_time_seconds < 10:
                 st.error("Minimum duration of clip should be 10 seconds")
                 st.caption(f"Selection option is {end_time_seconds - start_time_seconds} s")
+            
+            elif not start_is_valid:
+                st.error("Some gadbad in start time")
+            elif not end_is_valid:
+                st.error("Some gadbad in end time")
             
             else:
                 
                 st.markdown("#### :orange[Clip Preview]")
-                st.caption(f"##### :gray[Duration of clip: {end_time_seconds - start_time_seconds} seconds]")
+                
+                st.markdown(f"##### :gray[Duration of clip: {divmod(end_time_seconds - start_time_seconds,60)[0]}min and {divmod(end_time_seconds - start_time_seconds,60)[1]} s]")
                 st.caption("Play to begin and it will stop when clip duration is completed")
                 
                 st.audio(file_path,format="audio/wav",
@@ -199,6 +220,7 @@ class mainapp:
                 clip_name = left.text_input("Name the clip",
                                 max_chars=100,
                                 value= f"myclip").strip().replace("  "," ").lower()
+                
                 if not clip_name:
                     st.warning("enter name please")
                     st.stop()
