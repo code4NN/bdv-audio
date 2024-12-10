@@ -116,11 +116,11 @@ class mainapp:
             st.markdown("")
             st.divider()
             
-            st.download_button("Direct Download",
-                               data=file_path,
-                               file_name=f"{lecture_name}.mp3",
-                                mime="audio/mpeg"
-                               )
+            # st.download_button("Direct Download",
+            #                    data=file_path,
+            #                    file_name=f"{lecture_name}.mp3",
+            #                     mime="audio/mpeg"
+            #                    )
             
             if server =='mega':
                 st.markdown(f"[download from mega]({download_url})")
