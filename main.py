@@ -193,7 +193,8 @@ class mainapp:
                 end_time_input = st.number_input("choose end time",
                                                    min_value=convert_time_to_int(start_time_seconds),
                                                    step=1,
-                                                   value=convert_time_to_int(min(file_duration_secs,start_time_seconds+60)),
+                                                   value=0
+                                                #    value=convert_time_to_int(min(file_duration_secs,start_time_seconds+60)),
                                                    )
                 end_is_valid, msg, end_time_seconds = valid_start_end_time(end_time_input)
                 st.markdown(msg)
@@ -201,7 +202,10 @@ class mainapp:
             st.divider()
             
             # validate the input time window
-            if end_time_seconds - start_time_seconds < 10:
+            if end_time_seconds < start_time_seconds:
+                st.error("End time should be greater than start time")
+
+            elif end_time_seconds - start_time_seconds < 10:
                 st.error("Minimum duration of clip should be 10 seconds")
                 st.caption(f"Selection option is {end_time_seconds - start_time_seconds} s")
             
@@ -225,7 +229,7 @@ class mainapp:
                 left,right = st.columns([2,1])
                 clip_name = left.text_input("Name the clip",
                                 max_chars=100,
-                                value= f"myclip").strip().replace("  "," ").lower()
+                                value= f"myclip").strip().replace("  "," ").replace(" ","_").lower()
                 
                 if not clip_name:
                     st.warning("enter name please")
