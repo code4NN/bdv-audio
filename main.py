@@ -191,9 +191,10 @@ class mainapp:
                 
             with right:
                 end_time_input = st.number_input("choose end time",
-                                                   min_value=convert_time_to_int(start_time_seconds),
                                                    step=1,
-                                                   value=0
+                                                   value=0,
+                                                   min_value=0
+                                                #    min_value=convert_time_to_int(start_time_seconds),
                                                 #    value=convert_time_to_int(min(file_duration_secs,start_time_seconds+60)),
                                                    )
                 end_is_valid, msg, end_time_seconds = valid_start_end_time(end_time_input)
