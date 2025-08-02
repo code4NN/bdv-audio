@@ -8,9 +8,6 @@ gdown==5.2.0
 pycryptodome==3.20.0
 eyed3==0.9.7
 
-ffmpeg
-ffmpeg-python==0.2.0
-
 # google-api-python-client==2.69.0
 # streamlit-aggrid== 0.3.4.post3
 # beautifulsoup4==4.11.*
