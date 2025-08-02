@@ -5,7 +5,7 @@ import pytz
 import datetime
 import zipfile
 
-from custom_module.mega.mega.mega import Mega
+# from custom_module.mega.mega.mega import Mega
 import gdown
 from sheet_db import get_user_lecture
 
@@ -49,12 +49,12 @@ def bring_lecture_by_id(root_dir, lec_id, server,lec_encrypt_id):
             download_url = f"https://mega.co.nz/#!{lec_id}"
             with st.spinner("downloading from mega..."):
                 msgbox.caption("may take sometime please wait...")
-                mega_connection = Mega()
-                mega_connection.download_url(download_url,
-                                             root_dir,
-                                             dest_filename=filename)
-                msgbox.success("...done")
-            msgbox.empty()
+                # mega_connection = Mega()
+                # mega_connection.download_url(download_url,
+                #                              root_dir,
+                #                              dest_filename=filename)
+                # msgbox.success("...done")
+            # msgbox.empty()
 
         elif server == 'gdrive':
             download_url = f"https://drive.google.com/uc?id={lec_id}&export=download"
