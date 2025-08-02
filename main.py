@@ -441,7 +441,7 @@ class mainapp:
                 f"dur={clip_info['duration']}",
                 f"name={clip_info['clip_name']}"
             ]
-            share_url = f"{root_link}{'&'.join(share_url)}"
+            share_url = f"{root_link}?{'&'.join(share_url)}"
             share_msg = "\n".join(["Hare Krishna Pr",
                                            "I found this amazing clip",
                                            f"from the lecture: *{lecture_name}*",
