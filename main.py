@@ -501,7 +501,7 @@ st.markdown(
             background-color: #365069;
             color: white;
             }
-            a[href="https://streamlit.io/cloud"] {
+            ._profilePreview_gzau3_63 {
             display: none;
             }
             </style>
