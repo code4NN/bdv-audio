@@ -129,7 +129,8 @@ def bring_lecture_by_id(root_dir,lec_encrypt_id,lec_id, server):
         
         msgbox = st.empty()
         if server =='mega':
-            download_url = f"https://mega.co.nz/#!{lec_id}"
+            # download_url = f"https://mega.co.nz/#!{lec_id}"
+            download_url = f"https://mega.nz/file/{lec_id}"
             with st.spinner("downloading from mega..."):
                 msgbox.caption("may take sometime please wait...")
                 mega_connection = Mega()
