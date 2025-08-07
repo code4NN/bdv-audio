@@ -16,6 +16,24 @@ import subprocess
 import io
 # import ffmpeg
 
+def download_via_mega(fileid, destination, filename):
+    result = subprocess.run(
+        [
+            "./venv/bin/python3",  # Replace with the correct Python path
+            "mega_downloader.py",
+            fileid,
+            destination,
+            filename
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode == 0:
+        print("✅ Success:\n", result.stdout)
+    else:
+        print("❌ Error:\n", result.stderr)
+
 
 def bring_lecture_by_id(root_dir, lec_id, server,lec_encrypt_id):
 
@@ -46,13 +64,14 @@ def bring_lecture_by_id(root_dir, lec_id, server,lec_encrypt_id):
 
         msgbox = st.empty()
         if server == 'mega':
-            download_url = f"https://mega.co.nz/#!{lec_id}"
+            download_url = f"https://mega.nz/file/{lec_id}"
             with st.spinner("downloading from mega..."):
                 msgbox.caption("may take sometime please wait...")
                 mega_connection = Mega()
                 mega_connection.download_url(download_url,
                                              root_dir,
                                              dest_filename=filename)
+                download_via_mega(lec_id,)
                 msgbox.success("...done")
             msgbox.empty()
 
