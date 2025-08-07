@@ -5,7 +5,7 @@ import pytz
 import datetime
 import zipfile
 
-# from custom_module.mega.mega.mega import Mega
+from custom_module.mega.mega.mega import Mega
 import gdown
 from sheet_db import get_user_lecture
 
@@ -71,7 +71,7 @@ def bring_lecture_by_id(root_dir, lec_id, server,lec_encrypt_id):
                 mega_connection.download_url(download_url,
                                              root_dir,
                                              dest_filename=filename)
-                download_via_mega(lec_id,)
+                # download_via_mega(lec_id,)
                 msgbox.success("...done")
             msgbox.empty()
 
