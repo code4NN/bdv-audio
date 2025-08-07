@@ -487,27 +487,27 @@ if 'mainapp' not in st.session_state:
 mainapp = st.session_state['mainapp']
 st.set_page_config(**mainapp.page_config)
 
-# st.markdown(
-#             """
-#             <style>
-#             [data-testid="baseButton-header"] {
-#                 visibility: hidden;
-#             }
-#             [data-testid="stHeader"] {
-#             background-color: #365069;
-#             color: white;
-#             }
-#             footer {
-#             background-color: #365069;
-#             color: white;
-#             }
-#             a[href="https://streamlit.io/cloud"] {
-#             display: none;
-#             }
-#             </style>
-#             """,
-#             unsafe_allow_html=True
-# )
+st.markdown(
+            """
+            <style>
+            [data-testid="baseButton-header"] {
+                visibility: hidden;
+            }
+            [data-testid="stHeader"] {
+            background-color: #365069;
+            color: white;
+            }
+            footer {
+            background-color: #365069;
+            color: white;
+            }
+            a[href="https://streamlit.io/cloud"] {
+            display: none;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+)
 
 
 if not mainapp.query_is_handled:
