@@ -21,6 +21,7 @@ def query_handler(app):
                 user_lecturedb = get_user_lecture()
             user_info = user_lecturedb['users'].get(userid, None)
             lecture_info = user_lecturedb['lectures'].get(lecid, None)
+            userdata = user_lecturedb['userdata'].get(f'{lecid}_{userid}',{})
 
             if not user_info:
                 app.additional_info = {'has_error':True,'error':'user account no longer exist'}
@@ -30,6 +31,7 @@ def query_handler(app):
                 app.lecture_info = {'id':lecid,**lecture_info}
                 app.user_info = {'id':userid,**user_info}
                 app.additional_info = {'has_error':False,'src':source,'start_minute':start_at}
+                app.userdata4L = {'id':f"{lecid}_{userid}",**userdata}
     
     elif source =='clip':
         # ?src=clip&osrc=m&id=qyed&creator=rbfx&ss=0&dur=191&name=my_first_clip

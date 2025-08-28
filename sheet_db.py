@@ -3,6 +3,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import pandas as pd
 import pytz, datetime
+import json
 
 
 def get_user_lecture():
@@ -24,11 +25,12 @@ def get_user_lecture():
             st.session_state['google_sheet_connection'] = workbook
     workbook = st.session_state['google_sheet_connection'].worksheet('users')
     # return workbook.batch_get(['users','lectures'])
-    user_array, lecture_array = workbook.batch_get(['users','lectures'])
+    user_array, lecture_array, user_data = workbook.batch_get(['users','lectures','user_data_4_lec'])
     
     userdict = pd.DataFrame(user_array[1:],columns=user_array[0]).set_index('id').to_dict(orient='index')
     lecturedict = pd.DataFrame(lecture_array[1:],columns=lecture_array[0]).set_index('id').to_dict(orient='index')
-    return {"users":userdict,"lectures":lecturedict}
+    userdb_dict = pd.DataFrame(user_data[1:],columns=user_data[0]).set_index('id').to_dict(orient='index')
+    return {"users":userdict,"lectures":lecturedict,"userdata":userdb_dict}
     
 
 def log_hearing_traffic(payload):
@@ -90,3 +92,69 @@ def log_hearing_traffic(payload):
         .append_rows(values=upload_array_final,
                     value_input_option='USER_ENTERED',
                     table_range='A:G'))
+
+def log_lecture_status(payload):
+    
+    if 'google_sheet_connection' not in st.session_state:
+            credentials_info = st.secrets['service_account']
+            SCOPE = [
+            "https://www.googleapis.com/auth/spreadsheets"
+            ]
+            
+            gc = (gspread
+                .authorize(ServiceAccountCredentials
+                            .from_json_keyfile_dict(credentials_info,
+                                                    SCOPE)
+                            )
+                )
+            
+            sheet_id = '1M_vma6TihnAh_UTRNhA29Uh886YZ7bx3oQvBP5jUfIs'
+            workbook = gc.open_by_key(sheet_id)
+            st.session_state['google_sheet_connection'] = workbook
+
+    india_timezone = pytz.timezone('Asia/Kolkata')
+    timestamp = (datetime.datetime.now(india_timezone)
+                .strftime("%Y-%m-%d %H:%M:%S"))
+    
+    hit_type = payload['status_type']
+    
+    if hit_type =='new_entry':
+        upload_array_final = [[
+            None,None,
+            payload['lecture_id'],
+            payload['user_id'],
+            json.dumps(payload['status']),
+            f"""="{payload['notes']}" """,
+            timestamp
+        ]]
+        
+        worksheet = st.session_state['google_sheet_connection'].worksheet('status_record')
+        (worksheet
+        .append_rows(values=upload_array_final,
+                    value_input_option='USER_ENTERED',
+                    table_range='C:E'))
+    
+    elif hit_type =='update_entry':
+        upload_array_final = [[
+            None,None,
+            payload['lecture_id'],
+            payload['user_id'],
+            json.dumps(payload['status']),
+            f"""="{payload['notes']}" """,
+            timestamp
+        ]]
+        
+        worksheet = st.session_state['google_sheet_connection'].worksheet('status_record')
+        (worksheet
+        .update(
+                    f"A{payload['db_row']}:G{payload['db_row']}",
+                    upload_array_final,
+                    raw=False))
+    
+    # modify the client side information
+    user_data = (st.session_state['google_sheet_connection']
+                 .worksheet('status_record')
+                 .get('user_data_4_lec'))
+    user_lecture_db = pd.DataFrame(user_data[1:],columns=user_data[0]).set_index('id').to_dict(orient='index')
+    return user_lecture_db.get(f"{payload['lecture_id']}_{payload['user_id']}")
+    
