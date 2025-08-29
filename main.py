@@ -121,7 +121,7 @@ class mainapp:
                                               min_value=0 if _is_new_entry else int(lecture_status_4user['heard_until']),
                                               value=0 if _is_new_entry else int(lecture_status_4user['heard_until'])+1,
                                               step=1)
-                if len(userdata4L['summary'])>0:
+                if len(userdata4L.get('summary',""))>0:
                     view_mode = st.pills("mode",['edit','show'],default='show',selection_mode='single')
                     
                     if view_mode=='edit':
@@ -169,7 +169,7 @@ class mainapp:
             
             else :
                 # user status = completed
-                if len(userdata4L['summary'])>0:
+                if len(userdata4L.get('summary',""))>0:
                     view_mode = st.pills("mode",['edit','show'],default='show',selection_mode='single')
                     
                     if view_mode=='edit':
